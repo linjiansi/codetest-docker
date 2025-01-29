@@ -6,6 +6,7 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
       - ./db:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
     ports:
       - 3306:3306
     hostname: db
@@ -15,3 +16,6 @@ services:
       context: app
     ports:
       - 8888:8888
+
+volumes:
+  mysql_data:
