@@ -1,4 +1,12 @@
-FROM golang:1.23
+FROM golang:1.23.5
 
-COPY main.go .
-CMD go run main.go
+WORKDIR /app
+
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4 && \
+   go install github.com/air-verse/air@latest && \
+   go install github.com/go-delve/delve/cmd/dlv@latest
+
+COPY . .
+RUN go mod download
+
+CMD ["air", "-c", ".air.toml"]

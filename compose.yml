@@ -16,6 +16,10 @@ services:
       context: app
     ports:
       - 8888:8888
+      - 2345:2345
+    volumes:
+      - ./app:/app
+    tty: true
 
 volumes:
   mysql_data:
