@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+
 	"github.com/go-fuego/fuego"
 	"github.com/linjiansi/codetest-docker/src/di"
 	"github.com/linjiansi/codetest-docker/src/util"

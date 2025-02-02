@@ -3,9 +3,10 @@ package middleware
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"github.com/linjiansi/codetest-docker/src/usecase"
 	"github.com/linjiansi/codetest-docker/src/util"
-	"net/http"
 )
 
 type AuthenticationMiddleware interface {
@@ -22,7 +23,7 @@ func NewAuthenticationMiddleware(u usecase.UserUsecase) AuthenticationMiddleware
 
 func (a *authenticationMiddleware) Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiKey := r.Header.Get("apikey")
+		apiKey := r.Header.Get("Apikey")
 		if apiKey == "" {
 			appErr := util.NewAuthenticationError(errors.New("API key is required"))
 			util.ReturnErrorResponse(w, appErr)
