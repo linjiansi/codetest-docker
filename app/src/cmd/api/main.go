@@ -1,18 +1,20 @@
 package main
 
 import (
-	"io"
-	"log"
-	"net/http"
+	"github.com/go-fuego/fuego"
 )
 
 func main() {
-	http.HandleFunc("/transactions", func(w http.ResponseWriter, r *http.Request) {
-		if _, err := io.Copy(w, r.Body); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	s := fuego.NewServer(
+		fuego.WithAddr(":8888"),
+	)
+
+	fuego.Get(s, "/transactions", func(c fuego.ContextNoBody) (string, error) {
+		return "Hello, World!", nil
 	})
-	if err := http.ListenAndServe(":8888", nil); err != nil {
-		log.Println(err)
+
+	err := s.Run()
+	if err != nil {
+		panic(err)
 	}
 }
