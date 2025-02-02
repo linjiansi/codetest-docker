@@ -15,6 +15,7 @@ func Run() {
 	}
 
 	am := di.ProvideAuthenticationMiddleware(db)
+	th := di.ProvideTransactionsHandler(db)
 
 	s := fuego.NewServer(
 		fuego.WithAddr(":8888"),
@@ -28,9 +29,7 @@ func Run() {
 
 	fuego.Use(transactions, am.Authentication)
 
-	fuego.Get(transactions, "", func(c fuego.ContextNoBody) (string, error) {
-		return "Hello, World!", nil
-	})
+	fuego.Post(transactions, "", th.Transactions)
 
 	err = s.Run()
 	if err != nil {
