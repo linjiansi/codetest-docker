@@ -2,8 +2,10 @@ package router
 
 import (
 	"fmt"
+	"net/http"
 
-	"github.com/go-fuego/fuego"
+	"github.com/go-chi/chi/v5"
+
 	"github.com/linjiansi/codetest-docker/src/di"
 	"github.com/linjiansi/codetest-docker/src/util"
 	"github.com/rs/cors"
@@ -18,22 +20,19 @@ func Run() {
 	am := di.ProvideAuthenticationMiddleware(db)
 	th := di.ProvideTransactionsHandler(db)
 
-	s := fuego.NewServer(
-		fuego.WithAddr(":8888"),
-		fuego.WithCorsMiddleware(cors.New(cors.Options{
-			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders: []string{"apikey", "Content-Type"},
-		}).Handler),
-	)
+	r := chi.NewRouter()
 
-	transactions := fuego.Group(s, "/transactions")
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"apikey", "Content-Type"},
+	})
+	r.Use(c.Handler)
 
-	fuego.Use(transactions, am.Authentication)
+	r.Route("/transactions", func(r chi.Router) {
+		r.Use(am.Authentication)
+		r.Post("/", th.Transactions)
+	})
 
-	fuego.Post(transactions, "", th.Transactions)
-
-	err = s.Run()
-	if err != nil {
-		panic(err)
-	}
+	http.ListenAndServe(":8888", r)
 }

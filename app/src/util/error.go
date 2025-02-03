@@ -89,7 +89,6 @@ func ReturnErrorResponse(w http.ResponseWriter, err error) {
 	if appErr.BaseError != nil {
 		detail = appErr.BaseError.Error()
 	}
-
 	var statusCode int
 	switch appErr.Code {
 	case CodeAuthenticationError:

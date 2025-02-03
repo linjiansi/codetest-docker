@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/go-fuego/fuego"
 	"github.com/linjiansi/codetest-docker/src/handler/request"
+
 	"github.com/linjiansi/codetest-docker/src/handler/response"
 	"github.com/linjiansi/codetest-docker/src/usecase"
 	"github.com/linjiansi/codetest-docker/src/usecase/dto"
@@ -13,7 +14,7 @@ import (
 )
 
 type TransactionsHandler interface {
-	Transactions(c fuego.ContextWithBody[request.Transaction]) (response.Transactions, error)
+	Transactions(w http.ResponseWriter, r *http.Request)
 }
 
 type transactionsHandler struct {
@@ -24,37 +25,47 @@ func NewTransactionsHandler(u usecase.TransactionsUsecase) TransactionsHandler {
 	return &transactionsHandler{u}
 }
 
-func (t *transactionsHandler) Transactions(c fuego.ContextWithBody[request.Transaction]) (response.Transactions, error) {
-	userId, err := util.GetUserId(c.Context())
-	if err != nil {
-		return response.Transactions{}, err
+func (t *transactionsHandler) Transactions(w http.ResponseWriter, r *http.Request) {
+	var req *request.Transaction
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.ReturnErrorResponse(w, err)
+		return
 	}
-	body, err := c.Body()
+	ctx := r.Context()
+	userId, err := util.GetUserId(ctx)
 	if err != nil {
-		return response.Transactions{}, err
+		util.ReturnErrorResponse(w, err)
+		return
 	}
 
-	if body.UserID != userId {
+	if req.UserID != userId {
 		appErr := util.NewAuthenticationError(errors.New("user ID is not match"))
-		return response.Transactions{}, appErr
+		util.ReturnErrorResponse(w, appErr)
+		return
 	}
 
 	input := dto.TransactionsInput{
-		UserId:      userId,
-		Amount:      body.Amount,
-		Description: body.Description,
+		UserId:      req.UserID,
+		Amount:      req.Amount,
+		Description: req.Description,
 	}
 
-	err = t.u.ExecTransaction(c.Context(), &input)
+	err = t.u.ExecTransaction(ctx, &input)
 
 	if err != nil {
-		return response.Transactions{}, err
+		util.ReturnErrorResponse(w, err)
+		return
 	}
 
-	c.SetHeader("Content-Type", "application/json")
-	c.SetStatus(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 
-	return response.Transactions{
+	response := response.Transactions{
 		Message: "Transaction success",
-	}, nil
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		util.ReturnErrorResponse(w, err)
+		return
+	}
 }
