@@ -11,7 +11,7 @@ import (
 	"github.com/rs/cors"
 )
 
-func Run() {
+func configureRoutes() http.Handler {
 	db, err := util.NewDB()
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect to database: %v", err))
@@ -34,5 +34,5 @@ func Run() {
 		r.Post("/", th.Transactions)
 	})
 
-	http.ListenAndServe(":8888", r)
+	return r
 }
