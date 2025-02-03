@@ -57,15 +57,9 @@ func (t *transactionsHandler) Transactions(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	response := response.Transactions{
+	res := response.Transactions{
 		Message: "Transaction success",
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		util.ReturnErrorResponse(w, err)
-		return
-	}
+	util.ReturnResponse(w, http.StatusCreated, res)
 }

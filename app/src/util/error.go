@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 )
@@ -103,16 +102,10 @@ func ReturnErrorResponse(w http.ResponseWriter, err error) {
 		statusCode = http.StatusInternalServerError
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	response := ErrorResponse{
+	errRes := ErrorResponse{
 		Message: string(appErr.Message),
 		Detail:  detail,
 	}
 
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	ReturnResponse(w, statusCode, errRes)
 }
