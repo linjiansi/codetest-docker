@@ -9,4 +9,8 @@ RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4 && \
 COPY . .
 RUN go mod download
 
-CMD ["air", "-c", ".air.toml"]
+# For debugging
+#CMD ["air", "-c", ".air.toml"]
+
+RUN go build -o /go/bin/app ./src/cmd/api
+CMD ["/go/bin/app"]
